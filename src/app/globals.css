@@ -4,47 +4,209 @@
 
 @layer base {
   :root {
-    --background: 0 0% 6%; /* #0F0F0F */
-    --foreground: 0 0% 95%;
-    --card: 0 0% 9%;
-    --card-foreground: 0 0% 95%;
-    --popover: 0 0% 9%;
-    --popover-foreground: 0 0% 95%;
-    --primary: 24 95% 53%; /* #F97316 orange */
+    /* ── Light Mode ── */
+    --background: 216 40% 96%;
+    --foreground: 220 30% 14%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 30% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 30% 14%;
+    --primary: 220 80% 20%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 95%;
-    --muted: 0 0% 15%;
-    --muted-foreground: 0 0% 60%;
-    --accent: 0 0% 15%;
-    --accent-foreground: 0 0% 95%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 95%;
-    --border: 0 0% 18%;
-    --input: 0 0% 18%;
-    --ring: 24 95% 53%;
-    --radius: 0.625rem;
+    --secondary: 216 30% 93%;
+    --secondary-foreground: 220 30% 20%;
+    --muted: 216 25% 92%;
+    --muted-foreground: 220 15% 55%;
+    --accent: 216 30% 93%;
+    --accent-foreground: 220 30% 14%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 216 20% 88%;
+    --input: 216 20% 88%;
+    --ring: 216 20% 88%;
+    --radius: 1.5rem;
+    --brand: #011223;
+    --blue:  #1D6FD8;
+  }
+
+  .dark {
+    /* ── Dark Mode — refined palette ── */
+    --background: 224 28% 10%;          /* rich dark navy */
+    --foreground: 215 25% 88%;          /* warm off-white, easy on eyes */
+    --card: 223 24% 14%;                /* slightly lighter than bg */
+    --card-foreground: 215 25% 88%;
+    --popover: 223 24% 13%;
+    --popover-foreground: 215 25% 88%;
+    --primary: 213 80% 62%;             /* softer blue */
+    --primary-foreground: 224 28% 10%;
+    --secondary: 223 20% 19%;
+    --secondary-foreground: 215 20% 75%;
+    --muted: 223 20% 17%;
+    --muted-foreground: 215 15% 52%;
+    --accent: 223 20% 20%;
+    --accent-foreground: 215 25% 88%;
+    --destructive: 0 55% 45%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 223 18% 22%;              /* subtle, not harsh */
+    --input: 223 18% 22%;
+    --ring: 213 30% 35%;
+    --brand: #c8d6e8;                   /* muted blue-white for text */
+    --blue:  #5b9de8;                   /* softer blue accent */
   }
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
+  * { @apply border-border; }
   body {
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
-.glass-card {
-  @apply bg-card/50 backdrop-blur-xl border-white/5;
+/* ── Soft Focus Rings — override harsh outlines globally ── */
+*:focus-visible, button:focus-visible {
+  outline: none !important;
+  box-shadow: 0 0 0 1.5px hsl(var(--ring) / 0.35) !important;
+}
+.dark *:focus-visible, .dark button:focus-visible {
+  box-shadow: 0 0 0 1.5px hsl(213 60% 60% / 0.25) !important;
+}
+input:focus, select:focus, textarea:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 1.5px hsl(var(--ring) / 0.35) !important;
+}
+.dark input:focus, .dark select:focus, .dark textarea:focus {
+  box-shadow: 0 0 0 1.5px hsl(213 60% 60% / 0.25) !important;
 }
 
-.orange-gradient {
-  background: linear-gradient(135deg, #F97316 0%, #EA580C 100%);
+/* ── Smooth dark ↔ light theme transition ──
+   The .theme-transitioning class is added to <html> during toggle
+   and removed after 600ms. It forces smooth transitions on EVERY
+   element, overriding Tailwind's own transition-* utilities.       */
+html.theme-transitioning,
+html.theme-transitioning *,
+html.theme-transitioning *::before,
+html.theme-transitioning *::after {
+  transition:
+    background-color 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    color            0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    border-color     0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    box-shadow       0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    outline-color    0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    fill             0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    stroke           0.25s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity          0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transition-delay: 0s !important;
 }
 
+/* ── Sidebar active item ── */
 .sidebar-item-active {
-  @apply bg-primary/10 text-primary border-r-2 border-primary;
+  @apply bg-accent text-accent-foreground font-medium;
+}
+
+/* ── Custom Scrollbar ── */
+.custom-scrollbar::-webkit-scrollbar { width: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 10px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground));
+}
+
+/* ── Global Overlay Blur Backdrop ── */
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 44;
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(0px);
+  -webkit-backdrop-filter: blur(0px);
+  opacity: 0;
+  transition:
+    opacity         0.28s cubic-bezier(0.4, 0, 0.2, 1),
+    backdrop-filter 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* Radix adds data-scroll-locked to body when any dropdown/modal is open */
+body[data-scroll-locked] .overlay-backdrop,
+.overlay-backdrop.active {
+  opacity: 1;
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  pointer-events: auto;
+}
+.dark body[data-scroll-locked] .overlay-backdrop,
+.dark .overlay-backdrop.active {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+/* ── Glass Card ── */
+/* Light mode: translucent white */
+.glass-card {
+  @apply bg-white/60 backdrop-blur-md ring-1 ring-black/[0.06] shadow-md;
+}
+/* Dark mode: subtle dark panel, no harsh white */
+.dark .glass-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  @apply ring-1 shadow-lg;
+  --tw-ring-color: rgba(255, 255, 255, 0.07);
+  --tw-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+}
+
+/* ── Stats cards dark mode — solid colored accent glow ── */
+.dark .stats-card {
+  background: rgba(255, 255, 255, 0.04) !important;
+  backdrop-filter: blur(12px);
+  --tw-ring-opacity: 0.15;
+}
+/* The gradient overlay inside stats cards in dark mode should be stronger */
+.dark .stats-card-grad {
+  opacity: 0.35 !important;
+}
+/* Gloss highlight — hidden in dark mode */
+.dark .stats-card-gloss {
+  display: none;
+}
+
+/* ── Custom Color Picker (react-colorful) ── */
+.custom-colorful-picker {
+  display: flex !important;
+  flex-direction: row !important;
+  gap: 12px;
+  height: 200px !important;
+}
+
+.custom-colorful-picker .react-colorful__saturation {
+  flex: 1;
+  border-radius: 16px !important;
+  border-bottom: none !important;
+}
+
+.custom-colorful-picker .react-colorful__hue {
+  width: 14px !important;
+  height: 100% !important;
+  border-radius: 100px !important;
+}
+
+/* Custom pointers (the circles) */
+.custom-colorful-picker .react-colorful__pointer {
+  width: 20px !important;
+  height: 20px !important;
+  border: 3px solid #fff !important;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  background: transparent !important;
+}
+
+.custom-colorful-picker .react-colorful__saturation-pointer {
+  z-index: 3;
+}
+
+.custom-colorful-picker .react-colorful__hue-pointer {
+  width: 22px !important;
+  height: 22px !important;
+  border-radius: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
 }

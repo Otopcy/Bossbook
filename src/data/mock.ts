@@ -46,6 +46,19 @@ export const mockClients: Client[] = [
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
   },
+  {
+    id: "cl_3",
+    company_id: "comp_1",
+    name: "MTN Cameroun",
+    email: "comptabilite@mtn.cm",
+    phone: "+237 650 000 000",
+    address: "Avenue Kennedy",
+    city: "Yaoundé",
+    country: "CM",
+    notes: "",
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+  },
 ];
 
 export const mockProducts: Product[] = [
@@ -190,22 +203,76 @@ export const mockInvoices: Invoice[] = [
     updated_at: new Date().toISOString(),
     client: mockClients[1],
   },
+  {
+    id: "inv_5",
+    company_id: "comp_1",
+    client_id: "cl_3",
+    invoice_number: "INV-0005",
+    status: "paid",
+    issue_date: "2024-03-12",
+    due_date: "2024-03-26",
+    currency: "XAF",
+    subtotal: 800000,
+    tax_rate: 19.25,
+    tax_amount: 154000,
+    total: 954000,
+    notes: "",
+    terms: "Net 15",
+    paid_at: "2024-03-20",
+    sent_at: "2024-03-12",
+    is_recurring: false,
+    recurring_interval: null,
+    recurring_next_date: null,
+    recurring_end_date: null,
+    parent_invoice_id: null,
+    payment_link: null,
+    payment_transaction_id: null,
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString(),
+    client: mockClients[2],
+  },
 ];
 
 export const mockStats: DashboardStats = {
-  total_invoices: 4,
-  total_billed: 2971250,
-  total_paid: 596250,
-  total_pending: 2076875,
+  total_invoices: 5,
+  total_billed: 3935250,
+  total_paid: 1550250,
+  total_pending: 2086875,
   total_overdue: 298125,
   currency: "XAF",
 };
 
-export const mockRevenueData = [
-  { month: "Jan", revenue: 450000, paid: 450000 },
-  { month: "Feb", revenue: 800000, paid: 550000 },
-  { month: "Mar", revenue: 1200000, paid: 600000 },
-  { month: "Apr", revenue: 950000, paid: 850000 },
-  { month: "May", revenue: 1500000, paid: 1100000 },
-  { month: "Jun", revenue: 1300000, paid: 1000000 },
+export const mockWeeklyData = [
+  { label: "Lun", encaisse: 120000, attente: 45000 },
+  { label: "Mar", encaisse: 85000, attente: 60000 },
+  { label: "Mer", encaisse: 150000, attente: 20000 },
+  { label: "Jeu", encaisse: 200000, attente: 90000 },
+  { label: "Ven", encaisse: 300000, attente: 110000 },
+  { label: "Sam", encaisse: 50000, attente: 10000 },
+  { label: "Dim", encaisse: 0, attente: 0 },
+];
+
+export const mockMonthlyData = Array.from({ length: 31 }, (_, i) => {
+  const pseudoRand1 = Math.abs(Math.sin(i + 1));
+  const pseudoRand2 = Math.abs(Math.cos(i + 1));
+  return {
+    label: `${i + 1}`,
+    encaisse: Math.floor(pseudoRand1 * 200000) + 10000,
+    attente: Math.floor(pseudoRand2 * 100000) + 5000,
+  };
+});
+
+export const mockYearlyData = [
+  { label: "Jan", encaisse: 450000, attente: 200000 },
+  { label: "Fév", encaisse: 800000, attente: 350000 },
+  { label: "Mar", encaisse: 1200000, attente: 500000 },
+  { label: "Avr", encaisse: 950000, attente: 300000 },
+  { label: "Mai", encaisse: 1500000, attente: 400000 },
+  { label: "Juin", encaisse: 1300000, attente: 280000 },
+  { label: "Juil", encaisse: 1400000, attente: 320000 },
+  { label: "Août", encaisse: 1100000, attente: 200000 },
+  { label: "Sep", encaisse: 1600000, attente: 450000 },
+  { label: "Oct", encaisse: 1800000, attente: 500000 },
+  { label: "Nov", encaisse: 2000000, attente: 600000 },
+  { label: "Déc", encaisse: 2500000, attente: 800000 },
 ];

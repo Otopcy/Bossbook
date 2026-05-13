@@ -1,0 +1,44 @@
+# BOSSBOOK Design System - Règles pour Antigravity
+
+Ce fichier documente le système de design officiel du projet BOSSBOOK. À partir de maintenant, TOUTE nouvelle page, tout nouveau composant ou modification d'interface DOIT strictement respecter ces règles pour garantir une cohérence visuelle parfaite.
+
+## 1. Philosophie "Mobile First" & Compacité
+- **Responsive** : Empilement systématique (1 colonne) sur mobile, puis grille (2 à 4 colonnes) à partir des breakpoints `sm:`, `md:` ou `lg:`.
+- **Espaces** : Réduire l'encombrement sur mobile. Toujours utiliser des paddings adaptatifs : `p-4 md:p-6` ou `gap-3 md:gap-4`.
+- **Typographie des Chiffres** : Pour les statistiques ou montants importants, éviter le débordement sur petit écran : `text-[14px] sm:text-[18px] md:text-[22px] font-black tracking-tight leading-tight`.
+
+## 2. Liquid Glass & Formes
+- **Glassmorphism** : Utiliser la classe utilitaire `.glass-card` pour les conteneurs principaux (utilise `backdrop-blur-xl` et des bordures semi-transparentes).
+- **Arrondis (Border Radius)** :
+  - Grandes cartes et sections : `rounded-[32px]`
+  - Boutons, menus et petites cartes : `rounded-2xl`
+  - Boutons d'action, tags, badges et champs : `rounded-full`
+- **Ombres** : `shadow-sm` pour la profondeur subtile, `shadow-lg` pour les popups (Dropdowns, Modals).
+
+## 3. Palette & Couleurs (Light / Dark Mode)
+- **Fonds (Backgrounds)** :
+  - **Light** : `bg-gray-50` (fonds d'écran) ou `bg-white` (cartes).
+  - **Dark** : `bg-[#1c2537]` (fonds d'écran) ou `bg-white/[0.04]` (cartes). **Jamais de noir pur**.
+- **Texte** :
+  - **Light** : `text-gray-900` pour titres, `text-gray-500` pour secondaire.
+  - **Dark** : `text-gray-100` ou `text-white` pour titres, `text-gray-400` pour secondaire.
+- **Marque (Brand)** : `#011223` (bleu marine très sombre) / `#5b9de8` (bleu doux).
+- **Couleurs Sémantiques** (États & Statuts) :
+  - Positif / Encaissé : Emerald (`bg-emerald-500/10 text-emerald-600 dark:text-emerald-400`)
+  - En attente / Action : Amber (`bg-amber-500/10 text-amber-600 dark:text-amber-400`)
+  - Négatif / Retard : Red (`bg-red-50 dark:bg-red-500/10 text-red-500 dark:text-red-400`)
+
+## 4. Animations & Micro-interactions
+- **Staggered Reveal (Entrée en cascade)** : Toute nouvelle page ou vue doit s'animer à l'ouverture à l'aide des classes Tailwind `animate-in`.
+  - Ex: `animate-in fade-in slide-in-from-bottom-4 duration-700 ease-out`
+  - Utiliser `delay-150`, `delay-300` et `fill-mode-both` pour décaler les éléments successifs (Header -> Milieu -> Bas).
+- **Survol (Hover)** : `transition-all duration-300 hover:scale-[1.02]` ou changement de fond `hover:bg-gray-50 dark:hover:bg-white/[0.08]`.
+
+## 5. Composants Standardisés
+- **Dropdowns & Popups** : 
+  - Doivent toujours inclure `collisionPadding={12}` (ou équivalent) pour ne pas toucher les bords sur mobile.
+  - Fond plein `bg-white dark:bg-[#1c2537]` et bords `border-none`.
+- **Toggles (Interrupteurs)** :
+  - Utiliser un design de type "Segmented Control" (boutons segmentés) avec une pilule qui coulisse. Les options (ex: ☀️/🌙) doivent être toujours visibles à l'intérieur.
+- **Boutons Principaux (Call to Action)** : 
+  - `rounded-full bg-[#011223] dark:bg-[#5b9de8] text-white dark:text-[#011223] font-bold text-xs`.

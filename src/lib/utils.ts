@@ -6,14 +6,25 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatCurrency(amount: number, currency: string = "XAF") {
-  const isCFA = currency === "XAF" || currency === "XOF";
+  const parts = amount.toFixed(2).split(".");
+  const integerPart = parts[0];
   
-  return new Intl.NumberFormat(isCFA ? "fr-FR" : "en-US", {
-    style: "currency",
-    currency: currency,
-    minimumFractionDigits: isCFA ? 0 : 2,
-    maximumFractionDigits: isCFA ? 0 : 2,
-  }).format(amount);
+  const groups = [];
+  let temp = integerPart;
+  while (temp.length > 3) {
+    groups.unshift(temp.slice(-3));
+    temp = temp.slice(0, -3);
+  }
+  groups.unshift(temp);
+
+  let formatted = "";
+  if (groups.length >= 2) {
+    formatted = groups.join(".");
+  } else {
+    formatted = groups[0];
+  }
+  
+  return `${formatted},${parts[1]} ${currency}`;
 }
 
 export function formatDate(dateString: string) {
