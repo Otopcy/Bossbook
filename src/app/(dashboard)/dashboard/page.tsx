@@ -17,6 +17,7 @@ import {
   Package, Briefcase
 } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
   DropdownMenuSeparator
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
   const pickerRef = useRef<HTMLDivElement>(null);
   const supabase = createClient();
+  const router = useRouter();
 
   useEffect(() => {
     const initDashboard = async () => {
@@ -53,7 +55,11 @@ export default function DashboardPage() {
 
         if (currentUser) {
           // Ensure company exists first
-          await ensureCompany();
+          const company = await ensureCompany();
+          if (!company) {
+            router.push("/setup-company");
+            return;
+          }
 
           // Parallel fetch for speed
           const [statsData, activityData, clientsData, revenue] = await Promise.all([

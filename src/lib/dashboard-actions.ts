@@ -237,25 +237,11 @@ export async function ensureCompany() {
 
   const { data: company } = await supabase
     .from('companies')
-    .select('id')
+    .select('*')
     .eq('owner_id', user.id)
     .single()
 
-  if (!company) {
-    const { data: newCompany, error } = await supabase.from('companies').insert([{
-      owner_id: user.id,
-      name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Ma Compagnie',
-      email: user.email,
-    }]).select().single()
-    
-    if (error) {
-      console.error("Error creating company:", error)
-      return null
-    }
-    return newCompany
-  }
-
-  return company
+  return company; // Returns null if not found
 }
 
 export async function updateCompany(companyData: Record<string, any>) {
@@ -390,4 +376,40 @@ export async function getRevenueChartData() {
     monthly, 
     yearly: [{ label: `${new Date().getFullYear()}`, encaisse: monthly.reduce((s, m) => s + m.encaisse, 0), attente: monthly.reduce((s, m) => s + m.attente, 0) }]
   }
+}
+
+export async function deleteAccount() {
+  const supabase = createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Non authentifié')
+
+  // 1. Get the company
+  const { data: company } = await supabase
+    .from('companies')
+    .select('id')
+    .eq('owner_id', user.id)
+    .single()
+
+  if (company) {
+    // 2. Delete all related data (if cascade delete is not enabled)
+    // Most tables have company_id as FK
+    await supabase.from('invoices').delete().eq('company_id', company.id)
+    await supabase.from('quotes').delete().eq('company_id', company.id)
+    await supabase.from('clients').delete().eq('company_id', company.id)
+    await supabase.from('products').delete().eq('company_id', company.id)
+    await supabase.from('services').delete().eq('company_id', company.id)
+    
+    // 3. Delete the company itself
+    const { error: compError } = await supabase
+      .from('companies')
+      .delete()
+      .eq('id', company.id)
+    
+    if (compError) throw compError
+  }
+
+  // 4. Sign out
+  await supabase.auth.signOut()
+  
+  return { success: true }
 }

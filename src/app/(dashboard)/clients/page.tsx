@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Plus, Users, MoreHorizontal, Trash2, Loader2, Mail, Phone, MapPin } from "lucide-react";
+import { Search, Plus, Users, MoreHorizontal, Trash2, Mail, Phone, MapPin } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

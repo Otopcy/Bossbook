@@ -1,22 +1,18 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { Suspense } from "react";
+import React, { Suspense, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Mail, Lock, ArrowRight, User, Zap,
-  Eye, EyeOff, ChevronLeft, Loader2, Phone
+  ArrowUpRight, Zap, ChevronLeft, Loader2, Phone
 } from "lucide-react";
 import Image from "next/image";
-import { useSearchParams } from "next/navigation";
-import { login, signup } from "./actions";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
-// ── Types ──────────────────────────────────────────────────────────────────
-type AuthMethod = "email" | "phone" | null;
-
-// ── Google SVG ─────────────────────────────────────────────────────────────
+// ── Icons ─────────────────────────────────────────────────────────────
 function GoogleIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
@@ -28,87 +24,50 @@ function GoogleIcon() {
   );
 }
 
-// ── Shared input classes ───────────────────────────────────────────────────
-const inputCls =
-  "w-full h-[54px] pl-11 pr-4 rounded-2xl bg-gray-50/50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-gray-900 placeholder:text-gray-400 font-medium";
+function AppleIcon() {
+  return (
+    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M17.05 20.28c-.96.95-2.05 1.44-3.13 1.44-1.08 0-1.89-.36-2.92-.36-1.03 0-1.98.39-3.01.39-1.08 0-2.32-.58-3.41-1.67C2.79 18.29 1.44 15.35 1.44 12.3c0-4.66 3.06-7.14 6.01-7.14 1.54 0 2.87.97 3.82.97.95 0 2.45-1.11 4.31-1.11 1.03 0 2.45.41 3.44 1.44-4.14 2.29-3.41 7.84.86 9.68-.86 2.16-1.87 4.14-2.87 5.14zM12.03 4.2c-.11-2.14 1.63-4.04 3.73-4.2.22 2.37-2.09 4.38-3.73 4.2z" />
+    </svg>
+  );
+}
 
-// ── Main component ─────────────────────────────────────────────────────────
-function LoginForm() {
+const inputCls = "w-full h-[58px] px-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] text-base focus:outline-none focus:ring-2 focus:ring-[#011223] dark:focus:ring-[#5b9de8] transition-all text-gray-900 dark:text-white placeholder:text-gray-400 font-medium";
+
+function AuthForm() {
   const supabase = createClient();
-  const searchParams = useSearchParams();
-  const error = searchParams.get("error");
-
-  const [loading, setLoading] = useState(false);
-  const [isLogin, setIsLogin] = useState(true);
-
-  // Sign-up flow state
-  const [signupMethod, setSignupMethod] = useState<AuthMethod>(null); // null = choose, email/phone = form
-  const [signupStep, setSignupStep] = useState(0); // 0: identifier, 1: password
-
-  // Sign-in flow state
-  const [loginMethod, setLoginMethod] = useState<AuthMethod>(null); // null = choose
-  const [loginStep, setLoginStep] = useState(0); // 0: identifier, 1: password
-
-  const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const [method, setMethod] = useState<"email" | "phone" | null>(null);
   const [identifier, setIdentifier] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [verifying, setVerifying] = useState(false);
+  const [otp, setOtp] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
-  // ── Tab switch ─────────────────────────────────────────────────────────
-  const switchTab = (login: boolean) => {
-    setIsLogin(login);
-    setSignupMethod(null);
-    setSignupStep(0);
-    setLoginMethod(null);
-    setLoginStep(0);
-    setIdentifier("");
-    setShowPassword(false);
-  };
+  const handlePostLogin = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      const { data: company } = await supabase
+        .from('companies')
+        .select('id')
+        .eq('owner_id', user.id)
+        .single();
 
-  // ── Form submit ────────────────────────────────────────────────────────
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    const formData = new FormData(e.currentTarget);
-    const action = isLogin ? login : signup;
-    
-    try {
-      const result = await action(formData);
-      console.log("Auth result:", result);
-      
-      if (result?.success === 'OTP_SENT') {
-        if (isLogin) setLoginStep(1);
-        else setSignupStep(1);
-      } else if (result?.error) {
-        toast.error(result.error);
-      } else if (result?.success) {
-        // Handle direct success if applicable
+      if (!company) {
+        router.push("/setup-company");
+      } else {
+        router.push("/dashboard");
       }
-    } catch (err) {
-      console.error("Auth error:", err);
-      toast.error("Une erreur inattendue s'est produite.");
-    } finally {
-      setLoading(false);
     }
-  };
-
-  // ── Demo ───────────────────────────────────────────────────────────────
-  const handleDemoMode = async () => {
-    setLoading(true);
-    const formData = new FormData();
-    formData.append("identifier", "demo@bossbook.pro");
-    formData.append("password", "password123");
-    const result = await login(formData);
-    if (result?.error) {
-      toast.error(result.error);
-    }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
     setLoading(true);
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
-      options: {
+      options: { 
         redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: { prompt: 'select_account' }
       },
     });
     if (error) {
@@ -117,399 +76,213 @@ function LoginForm() {
     }
   };
 
-  // ── Description text ───────────────────────────────────────────────────
-  const subtitle = "Gérer vos factures et automatiser votre processus de facturation en un seul endroit et gratuitement.";
+  const handleAppleLogin = async () => {
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'apple',
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+    if (error) {
+      toast.error(error.message);
+      setLoading(false);
+    }
+  };
 
-  // ══════════════════════════════════════════════════════════════════════
-  // REGISTER — Step 0 : choose method
-  // ══════════════════════════════════════════════════════════════════════
-  const renderSignupChoose = () => (
-    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-400">
-      {/* Phone */}
-      <button
-        type="button"
-        onClick={() => setSignupMethod("phone")}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100/70 transition-all flex items-center gap-3 px-5 text-sm font-normal text-gray-800 group"
-      >
-        <Phone className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors" />
-        <span>S&apos;inscrire avec le téléphone</span>
-        <ArrowRight className="w-4 h-4 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </button>
+  const handleContinue = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!identifier.trim()) return;
+    setLoading(true);
+    try {
+      const isEmail = identifier.includes('@');
+      if (isEmail && !identifier.includes('.')) {
+        throw new Error("Veuillez entrer une adresse e-mail valide.");
+      }
+      const { error: authError } = await supabase.auth.signInWithOtp({
+        [isEmail ? 'email' : 'phone']: identifier,
+        options: isEmail ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
+      });
+      if (authError) throw authError;
+      setVerifying(true);
+      setError(null);
+      toast.success(isEmail ? "Lien de connexion envoyé !" : "Code envoyé par SMS !");
+    } catch (err: any) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Email */}
-      <button
-        type="button"
-        onClick={() => setSignupMethod("email")}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100/70 transition-all flex items-center gap-3 px-5 text-sm font-normal text-gray-800 group"
-      >
-        <Mail className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors" />
-        <span>S&apos;inscrire avec l&apos;e-mail</span>
-        <ArrowRight className="w-4 h-4 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </button>
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const isEmail = identifier.includes('@');
+      const { error } = await supabase.auth.verifyOtp({
+        [isEmail ? 'email' : 'phone']: identifier,
+        token: otp,
+        type: isEmail ? 'magiclink' : 'sms',
+      });
+      if (error) throw error;
+      await handlePostLogin();
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-      {/* Divider */}
-      <div className="relative flex items-center gap-3 py-1">
-        <div className="flex-1 h-px bg-gray-100" />
-        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest whitespace-nowrap">Ou</span>
-        <div className="flex-1 h-px bg-gray-100" />
+  const [showTerms, setShowTerms] = useState(false);
+  const [showPrivacy, setShowPrivacy] = useState(false);
+
+  if (verifying) {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <button onClick={() => setVerifying(false)} className="flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <ChevronLeft className="w-4 h-4" /> Modifier l&apos;identifiant
+        </button>
+        <div className="space-y-2 text-center">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Vérification</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
+            {identifier.includes('@') ? "Vérifiez vos e-mails." : "Entrez le code SMS reçu."}
+          </p>
+        </div>
+        <form onSubmit={handleVerifyOtp} className="space-y-4">
+          <input type="text" placeholder="Code de vérification" value={otp} onChange={(e) => setOtp(e.target.value)} autoFocus className={inputCls} />
+          <Button disabled={loading || otp.length < 6} className="w-full h-[58px] rounded-2xl bg-[#011223] dark:bg-[#5b9de8] text-white dark:text-[#011223] font-semibold hover:opacity-90 transition-all shadow-xl">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Vérifier"}
+          </Button>
+        </form>
+      </div>
+    );
+  }
+
+  if (method === "phone") {
+    return (
+      <div className="space-y-6 animate-in slide-in-from-right-4 duration-500">
+        <button onClick={() => setMethod(null)} className="flex items-center gap-2 text-xs font-semibold text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">
+          <ChevronLeft className="w-4 h-4" /> Retour
+        </button>
+        <div className="space-y-2">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">Numéro de téléphone</h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Entrez votre numéro au format international.</p>
+        </div>
+        <form onSubmit={handleContinue} className="space-y-4">
+          <input type="tel" placeholder="+237 6XX XXX XXX" value={identifier} onChange={(e) => setIdentifier(e.target.value)} autoFocus className={inputCls} />
+          <Button disabled={loading || !identifier.trim()} className="w-full h-[58px] rounded-2xl bg-[#011223] dark:bg-[#5b9de8] text-white dark:text-[#011223] font-semibold hover:opacity-90 transition-all shadow-xl">
+            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continuer"}
+          </Button>
+        </form>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6 animate-in fade-in zoom-in-95 duration-1000 max-w-sm mx-auto">
+      <div className="flex justify-center mb-2">
+        <Image src="/logo-black-final.svg" alt="BOSSBOOK" width={140} height={32} priority className="dark:invert" />
       </div>
 
-      {/* Google */}
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        disabled={loading}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 transition-all flex items-center justify-center gap-3 text-sm font-normal text-gray-700 group disabled:opacity-50"
-      >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
-        S&apos;inscrire avec Google
-      </button>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════════
-  // REGISTER — Step 1 : identifier (email or phone)
-  // REGISTER — Step 2 : password + name
-  // ══════════════════════════════════════════════════════════════════════
-  const renderSignupForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-5 animate-in slide-in-from-right-4 duration-500">
-      {/* Back */}
-      <button
-        type="button"
-        onClick={() => {
-          if (signupStep === 1) {
-            setSignupStep(0);
-          } else {
-            setSignupMethod(null);
-            setIdentifier("");
-          }
-        }}
-        className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 hover:text-gray-900 transition-colors"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-        {signupStep === 1 ? identifier : signupMethod === "email" ? "E-mail" : "Téléphone"}
-      </button>
-
-      {signupStep === 0 ? (
-        /* ── Identifier (+ Name for phone signup) ── */
-        <div className="space-y-5">
-          {signupMethod === "phone" && (
-            <div className="relative group animate-in fade-in slide-in-from-top-2 duration-300">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-              <input type="text" name="full_name" placeholder="Votre nom complet" required className={inputCls} />
-            </div>
-          )}
-          <div className="relative group">
-            {signupMethod === "email" ? (
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-            ) : (
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-            )}
-            <input
-              type={signupMethod === "email" ? "email" : "tel"}
-              name="identifier"
-              value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder={signupMethod === "email" ? "votre@email.com" : "+237 6XX XXX XXX"}
-              required
-              autoFocus
-              className={inputCls}
-            />
-            {signupMethod === "phone" && (
-              <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Format international requis (ex: +237...)</p>
-            )}
-          </div>
-          <Button
-            type={signupMethod === "phone" ? "submit" : "button"}
-            disabled={loading || !identifier.trim()}
-            onClick={signupMethod === "email" ? () => setSignupStep(1) : undefined}
-            className="w-full h-[56px] rounded-2xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-all shadow-lg active:scale-95 disabled:opacity-50 gap-2"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-              <>
-                {signupMethod === "phone" ? "Continuer" : "Suivant"} <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      ) : (
-        /* ── Password or OTP Verification ── */
-        <div className="space-y-4">
-          {signupMethod === "email" && (
-            <div className="relative group">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-              <input type="text" name="full_name" placeholder="Votre nom complet" required className={inputCls} />
-            </div>
-          )}
-          <div className="relative group">
-            {signupMethod === "email" ? (
-              <>
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Mot de passe (min. 8 car.)"
-                  required
-                  autoFocus
-                  className="w-full h-[54px] pl-11 pr-12 rounded-2xl bg-gray-50/50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-gray-900 placeholder:text-gray-400 font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </>
-            ) : (
-              <>
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-                <input
-                  type="text"
-                  name="token"
-                  placeholder="Code de vérification (SMS)"
-                  required
-                  autoFocus
-                  className="w-full h-[54px] pl-11 pr-4 rounded-2xl bg-gray-50/50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-gray-900 placeholder:text-gray-400 font-medium"
-                />
-              </>
-            )}
-          </div>
-          {/* Hidden identifier */}
-          <input type="hidden" name="identifier" value={identifier} />
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-[56px] rounded-2xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-all shadow-lg active:scale-95 disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (signupMethod === "phone" ? "Vérifier le code" : "Inscription")}
-          </Button>
-        </div>
-      )}
-    </form>
-  );
-
-  // ══════════════════════════════════════════════════════════════════════
-  // LOGIN — Step 0 : choose method
-  // ══════════════════════════════════════════════════════════════════════
-  const renderLoginChoose = () => (
-    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-400">
-      {/* Phone */}
-      <button
-        type="button"
-        onClick={() => setLoginMethod("phone")}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100/70 transition-all flex items-center gap-3 px-5 text-sm font-normal text-gray-800 group"
-      >
-        <Phone className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors" />
-        <span>Se connecter avec le téléphone</span>
-        <ArrowRight className="w-4 h-4 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </button>
-
-      {/* Email */}
-      <button
-        type="button"
-        onClick={() => setLoginMethod("email")}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 hover:bg-gray-100/70 transition-all flex items-center gap-3 px-5 text-sm font-normal text-gray-800 group"
-      >
-        <Mail className="w-4 h-4 text-gray-400 group-hover:text-gray-700 transition-colors" />
-        <span>Se connecter avec l&apos;e-mail</span>
-        <ArrowRight className="w-4 h-4 ml-auto text-gray-300 group-hover:text-gray-500 transition-colors" />
-      </button>
-
-      {/* Divider */}
-      <div className="relative flex items-center gap-3 py-1">
-        <div className="flex-1 h-px bg-gray-100" />
-        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-widest whitespace-nowrap">Ou</span>
-        <div className="flex-1 h-px bg-gray-100" />
+      <div className="text-center space-y-1 mb-5">
+        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">Continuer avec</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Choisissez votre méthode de connexion.</p>
       </div>
 
-      {/* Google */}
-      <button
-        type="button"
-        onClick={handleGoogleLogin}
-        disabled={loading}
-        className="w-full h-[54px] rounded-2xl border border-gray-100 bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 transition-all flex items-center justify-center gap-3 text-sm font-normal text-gray-700 group disabled:opacity-50"
-      >
-        {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <GoogleIcon />}
-        Se connecter avec Google
-      </button>
-    </div>
-  );
-
-  // ══════════════════════════════════════════════════════════════════════
-  // LOGIN — Step 1 : identifier → Step 2 : password
-  // ══════════════════════════════════════════════════════════════════════
-  const renderLoginForm = () => (
-    <form onSubmit={handleSubmit} className="space-y-5 animate-in slide-in-from-right-4 duration-500">
-      {/* Back */}
-      <button
-        type="button"
-        onClick={() => {
-          if (loginStep === 1) {
-            setLoginStep(0);
-          } else {
-            setLoginMethod(null);
-            setIdentifier("");
-          }
-        }}
-        className="flex items-center gap-1.5 text-[11px] font-semibold text-gray-400 hover:text-gray-900 transition-colors"
-      >
-        <ChevronLeft className="w-3.5 h-3.5" />
-        {loginStep === 1 ? identifier : loginMethod === "email" ? "E-mail" : "Téléphone"}
-      </button>
-
-      {loginStep === 0 ? (
-        /* ── Identifier ── */
-        <div className="space-y-5">
+      <div className="space-y-3">
+        {/* Email Form - Integrated */}
+        <form onSubmit={handleContinue} noValidate className="space-y-2">
           <div className="relative group">
-            {loginMethod === "email" ? (
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-            ) : (
-              <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-            )}
-            <input
-              type={loginMethod === "email" ? "email" : "tel"}
-              name="identifier"
+            <input 
+              type="email" 
+              placeholder="Adresse e-mail" 
               value={identifier}
-              onChange={(e) => setIdentifier(e.target.value)}
-              placeholder={loginMethod === "email" ? "votre@email.com" : "+237 6XX XXX XXX"}
-              required
-              autoFocus
-              className={inputCls}
+              onChange={(e) => { setIdentifier(e.target.value); setError(null); }}
+              className={cn(inputCls, "pr-14", error && "border-red-500/50 bg-red-50/30 dark:bg-red-500/5")} 
             />
-            {loginMethod === "phone" && (
-              <p className="text-[10px] text-gray-400 mt-1.5 ml-1">Format international requis (ex: +237...)</p>
-            )}
-          </div>
-          <Button
-            type={loginMethod === "phone" ? "submit" : "button"}
-            disabled={loading || !identifier.trim()}
-            onClick={loginMethod === "email" ? () => setLoginStep(1) : undefined}
-            className="w-full h-[56px] rounded-2xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-all shadow-lg active:scale-95 disabled:opacity-50 gap-2"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-              <>
-                {loginMethod === "phone" ? "Continuer" : "Suivant"} <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </Button>
-        </div>
-      ) : (
-        /* ── Password ── */
-        <div className="space-y-4">
-          <div className="relative group">
-            {loginMethod === "email" ? (
-              <>
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-                <input
-                  type={showPassword ? "text" : "password"}
-                  name="password"
-                  placeholder="Votre mot de passe"
-                  required
-                  autoFocus
-                  className="w-full h-[54px] pl-11 pr-12 rounded-2xl bg-gray-50/50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-gray-900 placeholder:text-gray-400 font-medium"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              </>
-            ) : (
-              <>
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 group-focus-within:text-gray-900 transition-colors" />
-                <input
-                  type="text"
-                  name="token"
-                  placeholder="Code de vérification (SMS)"
-                  required
-                  autoFocus
-                  className="w-full h-[54px] pl-11 pr-4 rounded-2xl bg-gray-50/50 border border-gray-100 text-sm focus:outline-none focus:ring-2 focus:ring-gray-200 transition-all text-gray-900 placeholder:text-gray-400 font-medium"
-                />
-              </>
-            )}
-          </div>
-          <div className="flex justify-end px-1">
-            <button type="button" className="text-[11px] font-semibold text-gray-900 hover:underline underline-offset-4">
-              Mot de passe oublié ?
+            <button type="submit" className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#011223] dark:bg-[#5b9de8] flex items-center justify-center text-white dark:text-[#011223] transition-all hover:scale-105 active:scale-95">
+              <ArrowUpRight className="w-4 h-4" />
             </button>
           </div>
-          {/* Hidden identifier */}
-          <input type="hidden" name="identifier" value={identifier} />
-          <Button
-            type="submit"
-            disabled={loading}
-            className="w-full h-[56px] rounded-2xl bg-gray-900 text-white font-semibold text-sm hover:bg-black transition-all shadow-lg active:scale-95 disabled:opacity-50"
-          >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (loginMethod === "phone" && loginStep === 1 ? "Vérifier le code" : "Connexion")}
-          </Button>
-        </div>
-      )}
-    </form>
-  );
+          {error && (
+            <div className="px-4 py-2 bg-red-50 dark:bg-red-500/10 border border-red-100 dark:border-red-500/20 rounded-xl animate-in fade-in slide-in-from-top-1 duration-300">
+              <p className="text-[11px] font-bold text-red-600 dark:text-red-400 leading-tight">
+                {error}
+              </p>
+            </div>
+          )}
+        </form>
 
-  // ══════════════════════════════════════════════════════════════════════
-  // RENDER
-  // ══════════════════════════════════════════════════════════════════════
-  return (
-    <div className="space-y-8 animate-in fade-in zoom-in-95 duration-1000">
-      {/* ── Logo ── */}
-      <div className="flex justify-center">
-        <Image src="/logo-black-final.svg" alt="Logo" width={180} height={40} priority />
-      </div>
-
-      {/* ── Header ── */}
-      <div className="text-center space-y-3 px-2">
-        <h2 className="text-2xl font-black text-gray-900 tracking-tight">
-          {isLogin ? "Connexion" : "Inscription"}
-        </h2>
-        <p className="text-[13px] text-gray-500 font-medium leading-relaxed">{subtitle}</p>
-      </div>
-
-      {/* ── Segmented Control ── */}
-      <div className="p-1 bg-gray-100/80 rounded-2xl flex relative h-12">
-        <div
-          className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-xl shadow-sm transition-all duration-300 ease-out z-0 ${!isLogin ? "left-[calc(50%+2px)]" : "left-1"}`}
-        />
-        <button
-          onClick={() => switchTab(true)}
-          className={`flex-1 relative z-10 text-xs font-semibold transition-colors ${isLogin ? "text-gray-900" : "text-gray-500"}`}
+        {/* Phone Button - Primary list */}
+        <button 
+          onClick={() => { setMethod("phone"); setIdentifier(""); setError(null); }} 
+          className="w-full h-[58px] rounded-2xl border border-gray-100 dark:border-white/[0.08] bg-gray-50/50 dark:bg-white/[0.02] hover:bg-gray-100 dark:hover:bg-white/[0.05] transition-all flex items-center gap-4 px-6 text-sm font-semibold text-gray-700 dark:text-gray-200"
         >
-          Connexion
+          <Phone className="w-4 h-4 text-gray-400" /> Numéro de téléphone
         </button>
-        <button
-          onClick={() => switchTab(false)}
-          className={`flex-1 relative z-10 text-xs font-semibold transition-colors ${!isLogin ? "text-gray-900" : "text-gray-500"}`}
-        >
-          Inscription
-        </button>
+
+        <div className="relative py-2">
+          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-white/[0.05]"></span></div>
+          <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 bg-white dark:bg-[#0c1425] px-2 tracking-widest">Ou</div>
+        </div>
+
+        {/* Social Buttons Side-by-Side */}
+        <div className="grid grid-cols-2 gap-3">
+          <button onClick={handleGoogleLogin} className="w-full h-[58px] rounded-2xl border border-gray-100 dark:border-white/[0.08] bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-all flex items-center justify-center gap-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+            <GoogleIcon /> Google
+          </button>
+          <button onClick={handleAppleLogin} className="w-full h-[58px] rounded-2xl border border-gray-100 dark:border-white/[0.08] bg-white dark:bg-white/[0.02] hover:bg-gray-50 dark:hover:bg-white/[0.05] transition-all flex items-center justify-center gap-3 text-sm font-semibold text-gray-700 dark:text-gray-200">
+            <AppleIcon /> Apple
+          </button>
+        </div>
       </div>
 
-      {/* ── Error ── */}
-      {error && (
-        <div className="p-3 rounded-2xl bg-red-50 border border-red-100 text-red-600 text-xs font-semibold text-center animate-in zoom-in duration-300">
-          {error}
-        </div>
-      )}
-
-      {/* ── Content ── */}
-      {isLogin ? (
-        loginMethod === null ? renderLoginChoose() : renderLoginForm()
-      ) : (
-        signupMethod === null ? renderSignupChoose() : renderSignupForm()
-      )}
-
-      {/* ── Demo mode ── */}
-      <div className="flex flex-col items-center gap-3 pt-2">
-        <button
-          onClick={handleDemoMode}
-          className="text-[11px] font-semibold text-blue-600 hover:underline flex items-center gap-1.5"
-        >
+      <div className="pt-2 flex flex-col items-center gap-3">
+        <p className="text-[9px] text-gray-400 text-center max-w-[280px] leading-relaxed">
+          En continuant, vous acceptez nos <span onClick={() => setShowTerms(true)} className="underline cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors">conditions d&apos;utilisation</span> et notre <span onClick={() => setShowPrivacy(true)} className="underline cursor-pointer hover:text-gray-900 dark:hover:text-white transition-colors">politique de confidentialité</span>.
+        </p>
+        <button onClick={() => router.push("/dashboard")} className="text-[10px] font-semibold text-gray-400 hover:text-gray-900 flex items-center gap-1.5 transition-all">
           <Zap className="w-3 h-3" /> Mode Démo
         </button>
       </div>
+
+      {/* Footer Text closer */}
+      <div className="pt-4 pb-4 text-center">
+        <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-gray-400 dark:text-gray-500">
+          BOSSBOOK © 2026 • BILLING EXCELLENCE
+        </p>
+      </div>
+
+      {/* ── Modals ─────────────────────────────────────────────────────── */}
+      {(showTerms || showPrivacy) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white dark:bg-[#1c2537] w-full max-w-2xl max-h-[80vh] rounded-[32px] overflow-hidden shadow-2xl flex flex-col animate-in zoom-in-95 duration-300">
+            <div className="p-8 border-b border-gray-100 dark:border-white/[0.08] flex items-center justify-between">
+              <h2 className="text-2xl font-bold text-gray-900 dark:text-white tracking-tight">
+                {showTerms ? "Conditions d'utilisation" : "Politique de confidentialité"}
+              </h2>
+              <button onClick={() => { setShowTerms(false); setShowPrivacy(false); }} className="w-10 h-10 rounded-full bg-gray-50 dark:bg-white/[0.05] flex items-center justify-center text-gray-400 hover:text-gray-900 dark:hover:text-white transition-all hover:scale-110">
+                <ChevronLeft className="w-5 h-5 rotate-90" />
+              </button>
+            </div>
+            <div className="p-8 overflow-y-auto custom-scrollbar">
+              <div className="space-y-6 text-sm text-gray-600 dark:text-gray-400 leading-relaxed font-medium">
+                {showTerms ? (
+                  <>
+                    <p>Bienvenue sur Bossbook. En utilisant nos services, vous acceptez les présentes conditions.</p>
+                    <h3 className="text-gray-900 dark:text-white font-bold">1. Utilisation du service</h3>
+                    <p>Bossbook est un logiciel de facturation destiné aux professionnels. Vous vous engagez à fournir des informations exactes lors de votre inscription.</p>
+                  </>
+                ) : (
+                  <>
+                    <p>Nous accordons une grande importance à la protection de vos données personnelles.</p>
+                    <h3 className="text-gray-900 dark:text-white font-bold">1. Collecte des données</h3>
+                    <p>Nous collectons uniquement les données nécessaires à la fourniture de notre service de facturation (E-mail, téléphone, informations d&apos;entreprise).</p>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -517,7 +290,9 @@ function LoginForm() {
 export default function LoginPage() {
   return (
     <Suspense fallback={<div className="flex justify-center p-8"><Loader2 className="w-8 h-8 animate-spin text-gray-400" /></div>}>
-      <LoginForm />
+      <div className="min-h-screen bg-white dark:bg-[#0c1425] flex flex-col items-center justify-start pt-[10vh] pb-8 px-4">
+        <AuthForm />
+      </div>
     </Suspense>
   );
 }

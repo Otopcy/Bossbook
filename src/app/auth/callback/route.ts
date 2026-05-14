@@ -20,13 +20,7 @@ export async function GET(request: Request) {
           .single()
 
         if (!company) {
-          // Create a default company for new users (e.g. from Google Auth)
-          await supabase.from('companies').insert([{
-            owner_id: user.id,
-            name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Ma Compagnie',
-            email: user.email,
-          }])
-          // Force onboarding for new users
+          // Force onboarding for new users to let them set up their own company details
           return NextResponse.redirect(`${origin}/setup-company`)
         }
       }

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Search, Plus, FileCheck, CheckCircle2, Clock, AlertCircle, MoreHorizontal, Trash2, Loader2 } from "lucide-react";
+import { Search, Plus, FileCheck, CheckCircle2, Clock, AlertCircle, MoreHorizontal, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { cn, formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
