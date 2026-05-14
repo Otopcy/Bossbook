@@ -11,6 +11,7 @@ import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { BOSSPhoneInput } from "@/components/ui/phone-input";
 
 // ── Icons ─────────────────────────────────────────────────────────────
 function GoogleIcon() {
@@ -44,8 +45,8 @@ function AuthForm() {
   const [otp, setOtp] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handlePostLogin = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
+  const handlePostLogin = async (userOverride?: any) => {
+    const user = userOverride || (await supabase.auth.getUser()).data.user;
     if (user) {
       const { data: company } = await supabase
         .from('companies')
@@ -90,27 +91,35 @@ function AuthForm() {
 
   const handleContinue = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier.trim()) return;
+    const id = identifier.trim();
+    if (!id) return;
+    
     setLoading(true);
+    setError(null);
+
     try {
-      const isEmail = identifier.includes('@');
-      if (isEmail && !identifier.includes('.')) {
+      const isEmail = id.includes('@');
+      
+      if (isEmail && !id.includes('.')) {
         throw new Error("Veuillez entrer une adresse e-mail valide.");
       }
+
       const { error: authError } = isEmail 
         ? await supabase.auth.signInWithOtp({
-            email: identifier,
+            email: id,
             options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
           })
         : await supabase.auth.signInWithOtp({
-            phone: identifier,
+            phone: id,
           });
+
       if (authError) throw authError;
+      
       setVerifying(true);
-      setError(null);
       toast.success(isEmail ? "Lien de connexion envoyé !" : "Code envoyé par SMS !");
     } catch (err: any) {
-      setError(err.message);
+      console.error("Auth error:", err);
+      setError(err.message || "Une erreur est survenue lors de l'envoi du code.");
     } finally {
       setLoading(false);
     }
@@ -118,10 +127,13 @@ function AuthForm() {
 
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!otp.trim()) return;
     setLoading(true);
+    setError(null);
+
     try {
       const isEmail = identifier.includes('@');
-      const { error } = isEmail 
+      const { data, error } = isEmail 
         ? await supabase.auth.verifyOtp({
             email: identifier,
             token: otp,
@@ -132,10 +144,17 @@ function AuthForm() {
             token: otp,
             type: 'sms',
           });
+
       if (error) throw error;
-      await handlePostLogin();
-    } catch (error: any) {
-      toast.error(error.message);
+      if (data?.user) {
+        await handlePostLogin(data.user);
+      } else {
+        throw new Error("La vérification a réussi mais aucune session n'a été créée.");
+      }
+    } catch (err: any) {
+      console.error("Verification error:", err);
+      toast.error(err.message || "Code invalide ou expiré.");
+      setError(err.message);
     } finally {
       setLoading(false);
     }
@@ -177,8 +196,15 @@ function AuthForm() {
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">Entrez votre numéro au format international.</p>
         </div>
         <form onSubmit={handleContinue} className="space-y-4">
-          <input type="tel" placeholder="+237 6XX XXX XXX" value={identifier} onChange={(e) => setIdentifier(e.target.value)} autoFocus className={inputCls} />
-          <Button disabled={loading || !identifier.trim()} className="w-full h-[58px] rounded-2xl bg-[#011223] dark:bg-[#5b9de8] text-white dark:text-[#011223] font-semibold hover:opacity-90 transition-all shadow-xl">
+          <div className={cn(inputCls, "flex items-center")}>
+            <BOSSPhoneInput 
+              value={identifier} 
+              onChange={setIdentifier} 
+              className="w-full"
+              placeholder="Votre numéro de téléphone"
+            />
+          </div>
+          <Button disabled={loading || !identifier.trim()} className="w-full h-[62px] rounded-2xl bg-[#011223] dark:bg-[#5b9de8] text-white dark:text-[#011223] font-semibold hover:opacity-90 transition-all shadow-xl">
             {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Continuer"}
           </Button>
         </form>
