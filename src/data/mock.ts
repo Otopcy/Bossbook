@@ -239,6 +239,7 @@ export const mockStats: DashboardStats = {
   total_paid: 1550250,
   total_pending: 2086875,
   total_overdue: 298125,
+  total_clients: 3,
   currency: "XAF",
 };
 

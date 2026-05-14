@@ -97,10 +97,14 @@ function AuthForm() {
       if (isEmail && !identifier.includes('.')) {
         throw new Error("Veuillez entrer une adresse e-mail valide.");
       }
-      const { error: authError } = await supabase.auth.signInWithOtp({
-        [isEmail ? 'email' : 'phone']: identifier,
-        options: isEmail ? { emailRedirectTo: `${window.location.origin}/auth/callback` } : undefined,
-      });
+      const { error: authError } = isEmail 
+        ? await supabase.auth.signInWithOtp({
+            email: identifier,
+            options: { emailRedirectTo: `${window.location.origin}/auth/callback` },
+          })
+        : await supabase.auth.signInWithOtp({
+            phone: identifier,
+          });
       if (authError) throw authError;
       setVerifying(true);
       setError(null);
@@ -117,11 +121,17 @@ function AuthForm() {
     setLoading(true);
     try {
       const isEmail = identifier.includes('@');
-      const { error } = await supabase.auth.verifyOtp({
-        [isEmail ? 'email' : 'phone']: identifier,
-        token: otp,
-        type: isEmail ? 'magiclink' : 'sms',
-      });
+      const { error } = isEmail 
+        ? await supabase.auth.verifyOtp({
+            email: identifier,
+            token: otp,
+            type: 'magiclink',
+          })
+        : await supabase.auth.verifyOtp({
+            phone: identifier,
+            token: otp,
+            type: 'sms',
+          });
       if (error) throw error;
       await handlePostLogin();
     } catch (error: any) {

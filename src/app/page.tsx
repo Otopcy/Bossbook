@@ -6,7 +6,7 @@ import React, { useState, useRef } from "react";
 import { 
   CheckCircle2, Zap, Shield, Users, 
   CreditCard, FileText, Send, Wallet,
-  Crown, Infinity, XCircle
+  Crown, Infinity as InfinityIcon, XCircle
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -353,7 +353,7 @@ export default function LandingPage() {
             { icon: Shield, text: "Sécurisé", sub: "CB, Mobile Money" },
             { icon: Zap, text: "Immédiat", sub: "Prêt en 3s" },
             { icon: CreditCard, text: "Garantie", sub: "14 jours satisfait" },
-            { icon: Infinity, text: "Flexible", sub: "Résiliez à tout moment" },
+            { icon: InfinityIcon, text: "Flexible", sub: "Résiliez à tout moment" },
             { icon: XCircle, text: "Support", sub: "Réponse < 2h" },
           ].map((item, i) => (
             <div key={i} className="flex flex-col items-center text-center gap-4 group">

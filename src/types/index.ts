@@ -102,5 +102,6 @@ export interface DashboardStats {
   total_paid: number;
   total_pending: number;
   total_overdue: number;
+  total_clients: number;
   currency: Currency;
 }
