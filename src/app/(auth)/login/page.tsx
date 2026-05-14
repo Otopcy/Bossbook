@@ -32,7 +32,7 @@ function AppleIcon() {
   );
 }
 
-const inputCls = "w-full h-[58px] px-6 rounded-2xl bg-gray-50/80 dark:bg-white/[0.02] border border-gray-100 dark:border-white/[0.08] text-base focus:outline-none focus:ring-2 focus:ring-[#011223] dark:focus:ring-[#5b9de8] transition-all text-gray-900 dark:text-white placeholder:text-gray-400 font-medium";
+const inputCls = "w-full h-[62px] px-6 rounded-2xl bg-gray-50/50 dark:bg-white/[0.03] border border-gray-100 dark:border-white/[0.08] text-base focus:outline-none focus:ring-2 focus:ring-[#011223] dark:focus:ring-[#5b9de8] transition-all text-gray-900 dark:text-white placeholder:text-gray-400 font-medium shadow-sm";
 
 function AuthForm() {
   const supabase = createClient();
@@ -188,13 +188,17 @@ function AuthForm() {
 
   return (
     <div className="space-y-6 animate-in fade-in zoom-in-95 duration-1000 max-w-sm mx-auto">
-      <div className="flex justify-center mb-2">
-        <Image src="/logo-black-final.svg" alt="BOSSBOOK" width={140} height={32} priority className="dark:invert" />
+      <div className="flex justify-center mb-8">
+        <Image src="/logo-black-final.svg" alt="BOSSBOOK" width={180} height={40} priority className="dark:invert opacity-90" />
       </div>
 
-      <div className="text-center space-y-1 mb-5">
-        <h1 className="text-3xl font-semibold text-gray-900 dark:text-white tracking-tight">Continuer avec</h1>
-        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Choisissez votre méthode de connexion.</p>
+      <div className="text-center space-y-3 mb-8">
+        <h1 className="text-[28px] md:text-[32px] font-black text-[#011223] dark:text-white tracking-tight leading-tight">
+          Heureux de vous revoir !
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium max-w-[280px] mx-auto leading-relaxed">
+          Connectez-vous pour gérer votre facturation en toute simplicité.
+        </p>
       </div>
 
       <div className="space-y-3">
@@ -229,9 +233,9 @@ function AuthForm() {
           <Phone className="w-4 h-4 text-gray-400" /> Numéro de téléphone
         </button>
 
-        <div className="relative py-2">
-          <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-gray-100 dark:border-white/[0.05]"></span></div>
-          <div className="relative flex justify-center text-[10px] uppercase font-bold text-gray-400 dark:text-gray-500 bg-white dark:bg-[#0c1425] px-2 tracking-widest">Ou</div>
+        <div className="relative py-4">
+          <div className="absolute inset-0 flex items-center px-4"><span className="w-full border-t border-gray-100 dark:border-white/[0.05]"></span></div>
+          <div className="relative flex justify-center text-[10px] uppercase font-black text-gray-400 dark:text-gray-500 bg-white dark:bg-[#1c2537] px-4 tracking-[0.2em] rounded-full mx-auto w-fit">Ou</div>
         </div>
 
         {/* Social Buttons Side-by-Side */}
