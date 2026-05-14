@@ -4,16 +4,14 @@
 
 import React, { useState, useRef } from "react";
 import { 
-  ArrowRight, CheckCircle2, Zap, Shield, 
-  BarChart3, Users, Star, ChevronDown, 
-  CreditCard, Clock, FileText, Rocket, Sparkles,
-  ArrowUpRight, LayoutDashboard, Send, Wallet,
-  Crown, Infinity, XCircle, MousePointer2
+  CheckCircle2, Zap, Shield, Users, 
+  CreditCard, FileText, Send, Wallet,
+  Crown, Infinity, XCircle
 } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { motion, useScroll, useTransform, useInView, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 // ── Types & Data ──────────────────────────────────────────────────
 
