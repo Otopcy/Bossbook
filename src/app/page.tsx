@@ -5,10 +5,11 @@
 import React, { useState, useRef } from "react";
 import { 
   CheckCircle2, Zap, Shield, Users, 
-  CreditCard, FileText, Send, Wallet,
+  CreditCard, Send, Wallet,
   Crown, Infinity as InfinityIcon, XCircle
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -86,12 +87,9 @@ const Navbar = () => (
     className="fixed top-0 left-0 w-full z-50 border-b border-white/10 bg-[#011223]/40 backdrop-blur-2xl"
   >
     <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-      <div className="flex items-center gap-2.5 group cursor-pointer">
-        <div className="w-10 h-10 bg-gradient-to-br from-[#5b9de8] to-indigo-600 rounded-xl flex items-center justify-center shadow-lg shadow-[#5b9de8]/20 group-hover:rotate-6 transition-transform duration-500">
-          <FileText className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-xl font-black text-white tracking-tighter italic">BOSSBOOK</span>
-      </div>
+      <Link href="/" className="flex items-center gap-3 group cursor-pointer">
+        <Image src="/logo-white.svg" alt="BOSSBOOK" width={160} height={36} priority className="opacity-90 group-hover:opacity-100 transition-opacity" />
+      </Link>
       
       <div className="hidden lg:flex items-center gap-10">
         {['Fonctionnalités', 'Comment ça marche', 'Tarifs'].map((item, i) => (
@@ -103,7 +101,7 @@ const Navbar = () => (
 
       <div className="flex items-center gap-6">
         <Link href="/login" className="text-xs font-black uppercase tracking-widest text-gray-400 hover:text-white transition-colors">Connexion</Link>
-        <Link href="/register">
+        <Link href="/login">
           <Button className="rounded-full bg-white text-[#011223] font-black text-[10px] uppercase tracking-widest px-8 h-11 hover:bg-[#5b9de8] hover:text-white transition-all">
             Démarrer
           </Button>
@@ -195,7 +193,7 @@ export default function LandingPage() {
           </motion.p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-8 pt-8">
-            <Link href="/register">
+            <Link href="/login">
               <Button className="h-16 px-14 rounded-full bg-[#5b9de8] text-[#011223] font-black text-sm uppercase tracking-widest hover:scale-110 transition-all shadow-2xl shadow-[#5b9de8]/30">
                 Commencer gratuitement
               </Button>
@@ -376,7 +374,7 @@ export default function LandingPage() {
             <h2 className="text-6xl md:text-8xl font-black tracking-tighter italic leading-none">
               Prêt pour <br /> l&apos;excellence ?
             </h2>
-            <Link href="/register">
+            <Link href="/login">
               <Button className="h-20 px-16 rounded-full bg-[#011223] text-white font-black text-xl hover:scale-105 transition-all">
                 Démarrer maintenant
               </Button>
@@ -387,10 +385,7 @@ export default function LandingPage() {
 
       <footer className="py-20 px-6 border-t border-white/10 text-center">
         <div className="flex items-center justify-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-[#5b9de8] rounded-lg flex items-center justify-center shadow-lg">
-            <FileText className="w-5 h-5 text-[#011223]" />
-          </div>
-          <span className="text-xl font-black text-white tracking-tighter italic">BOSSBOOK</span>
+          <Image src="/logo-white.svg" alt="BOSSBOOK" width={140} height={32} className="opacity-60" />
         </div>
         <p className="text-[10px] font-black text-gray-600 uppercase tracking-[0.4em]">
           © 2026 BOSSBOOK • L&apos;EXCELLENCE DANS LA FACTURATION
