@@ -90,7 +90,7 @@ export default function DashboardPage() {
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
-  }, [supabase]);
+  }, [supabase, router]);
 
   useEffect(() => {
     const backdrop = document.getElementById("overlay-backdrop");

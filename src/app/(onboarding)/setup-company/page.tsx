@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
@@ -5,7 +6,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { 
   Building2, MapPin, Hash, ArrowRight, Upload, 
-  X, Phone, User, Palette, CheckCircle2, ChevronLeft,
+  X, Phone, User, CheckCircle2, ChevronLeft,
   Briefcase, Star, Zap, Loader2
 } from "lucide-react";
 import { useRouter } from "next/navigation";

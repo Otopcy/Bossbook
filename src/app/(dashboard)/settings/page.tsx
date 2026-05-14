@@ -1,8 +1,9 @@
+/* eslint-disable @next/next/no-img-element */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Save, Building, CreditCard, Bell, Shield, Paintbrush, ArrowLeft, Globe, X, ChevronDown, User, Trash2, AlertTriangle, Loader2 } from "lucide-react";
+import { Save, Building, CreditCard, Bell, Shield, Paintbrush, ArrowLeft, Globe, ChevronDown, User, Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -18,7 +19,7 @@ type TabType = "entreprise" | "profil" | "personalization" | "billing" | "notifi
 export default function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabType>("entreprise");
   const { theme, setTheme } = useTheme();
-  const { currency: currentCurrency, setCurrency } = useCurrency();
+  const { currency: currentCurrency } = useCurrency();
   const [loading, setLoading] = useState(false);
   const [company, setCompany] = useState<any>(null);
   const [user, setUser] = useState<any>(null);
